@@ -6,24 +6,98 @@ import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
     user: any;
+    accessToken: string | null;
     signUp: (params: any) => Promise<any>;
     login: (params: any) => Promise<any>;
     logout: () => void;
+    apiRequest: (url: string, options?: any) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: any) => {
     const [user, setUser] = useState<any>(null);
+    const [accessToken, setAccessToken] = useState<string | null>(null);
 
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
+    // 🔍 Check token expiry
+    const isTokenExpired = (token: string) => {
+        try {
+            const decoded: any = jwtDecode(token);
+            return decoded.exp * 1000 < Date.now();
+        } catch {
+            return true;
         }
-    }, []);
+    };
 
+    // 🔁 Refresh Access Token
+    const refreshAccessToken = async () => {
+        try {
+            const res = await fetch(`${BASE_URL}/refresh`, {
+                method: "POST",
+                credentials: "include", // 🔥 important
+            });
+
+            const data = await res.json();
+
+            if (data.code === 200) {
+                setAccessToken(data.access_token);
+                return data.access_token;
+            }
+
+            return null;
+        } catch (err) {
+            return null;
+        }
+    };
+
+    // 🚀 MAIN API HANDLER
+    const apiRequest = async (url: string, options: any = {}) => {
+        let token = accessToken;
+
+        // 🔍 Check before request
+        if (!token || isTokenExpired(token)) {
+            token = await refreshAccessToken();
+
+            if (!token) {
+                logout();
+                return null;
+            }
+        }
+
+        let res = await fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            credentials: "include",
+        });
+
+        // 🔁 Fallback if backend says unauthorized
+        if (res.status === 401) {
+            token = await refreshAccessToken();
+
+            if (!token) {
+                logout();
+                return null;
+            }
+
+            res = await fetch(url, {
+                ...options,
+                headers: {
+                    ...options.headers,
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
+        }
+
+        return res;
+    };
+
+    // 🔐 LOGIN
     const login = async (params: any) => {
         try {
             const res = await fetch(`${BASE_URL}${LOGIN}`, {
@@ -32,27 +106,25 @@ export const AuthProvider = ({ children }: any) => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(params),
+                credentials: "include", // 🔥 cookie support
             });
 
             const data = await res.json();
 
             if (data.code === 200) {
-                // ✅ Store tokens
-                localStorage.setItem("access_token", data.access_token);
-                localStorage.setItem("refresh_token", data.refresh_token);
-
-                // ✅ Store user
-                localStorage.setItem("user", JSON.stringify(data.user));
+                setAccessToken(data.access_token);
                 setUser(data.user);
+
+                localStorage.setItem("user", JSON.stringify(data.user));
             }
 
             return data;
         } catch (err) {
-            console.error("Login Error:", err);
             return { code: 500, message: "Server error" };
         }
     };
 
+    // 📝 SIGNUP
     const signUp = async (params: any) => {
         try {
             const res = await fetch(`${BASE_URL}${SIGN_UP}`, {
@@ -65,26 +137,52 @@ export const AuthProvider = ({ children }: any) => {
 
             return await res.json();
         } catch (err) {
-            console.error("Signup Error:", err);
             return { code: 500, message: "Server error" };
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+    // 🚪 LOGOUT
+    const logout = async () => {
+        try {
+            await fetch(`${BASE_URL}/logout`, {
+                method: "POST",
+                credentials: "include",
+            });
+        } catch {}
+
+        setAccessToken(null);
+        setUser(null);
+
         localStorage.removeItem("user");
 
-        setUser(null);
+        window.location.href = "/login";
     };
 
+    // 🔄 Restore user on reload
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
+
     return (
-        <AuthContext.Provider value={{ user, signUp, login, logout }}>
+        <AuthContext.Provider
+            value={{
+                user,
+                accessToken,
+                signUp,
+                login,
+                logout,
+                apiRequest,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
 };
 
+// 🔗 Hook
 export const useAuthContext = () => {
     const context = useContext(AuthContext);
 
