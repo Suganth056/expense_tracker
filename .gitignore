@@ -1,0 +1,32 @@
+/backend/.env
+
+/front-end/.next
+
+/front-end/node_modules
+/front-end/.pnp
+/front-end/.pnp.*
+/front-end/.yarn/*
+
+# testing
+/front-end/coverage
+
+# next.js
+/front-end/.next/
+/front-end/out/
+
+# production
+/front-end/build
+
+# misc
+/front-end/.DS_Store
+/front-end/*.pem
+
+
+/front-end/.env*
+
+# vercel
+/front-end/.vercel
+
+# typescript
+/front-end/*.tsbuildinfo
+/front-end/next-env.d.ts
