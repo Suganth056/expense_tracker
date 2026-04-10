@@ -12,37 +12,54 @@ const Login = () => {
     const [user_name, setUserName] = useState("");
     const [phone_no, setPhoneNo] = useState("");
     const [pwd, setPwd] = useState('');
-    const { login } = useAuthContext();
+    const { login,setMessage,setStatusMessage,setOpenSnackbar} = useAuthContext();
 
     const postDetails = async(params:any)=>{
         const res = await login(params);
         if(res?.code == 200){
-            alert("Successfully Login")
+            setOpenSnackbar(true)
+            setMessage("Successfully Login")
+            setStatusMessage("success")
+            
             router.push("/")
         }
         else{
-            alert(`Problem with Sign IN :  ${res?.message}`)
+            setOpenSnackbar(true)
+            setMessage(`Problem with Sign IN :  ${res?.message}`)
+            setStatusMessage("error")
+            
         }
     }
 
      const handleSubmit=(e:any)=>{
         e.preventDefault();
+        setStatusMessage("warning")
         if(user_name.trim() == "" || user_name.length<1){
-            alert("Please Enter a name")
+            setOpenSnackbar(true)
+            setMessage("Please Enter a name")
+            
             return
         }
         else if(phone_no.trim()=="" || phone_no.length<10){
-            alert("Please Enter A valid Number")
+            setOpenSnackbar(true)
+            setMessage("Please Enter A valid Number")
+            
             return
         }
         else if(pwd.trim() == ""){
-            alert("Please Enter a Password")
+            setOpenSnackbar(true)
+            setMessage("Please Enter a Password")
+            
             return
         }
         else if(pwd.length<6){
-            alert("Atleast Enter 6 Letters")
+            setOpenSnackbar(true)
+            setMessage("Atleast Enter 6 Letters")
+            
             return
         }
+
+        setStatusMessage("success")
 
         const obj={user_name,phone_no,pwd}
         postDetails(obj)

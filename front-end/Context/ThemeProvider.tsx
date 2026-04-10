@@ -11,7 +11,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider=({children}:any)=>{
     const [theme,setTheme] = useState('light');
-
+    
     return(
         <ThemeContext.Provider value={{theme}}>
             {children}
