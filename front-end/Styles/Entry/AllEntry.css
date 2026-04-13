@@ -1,0 +1,61 @@
+.highlight-box{
+    padding: 10px;
+    border: 2px solid gray;
+    border-radius: 8px;
+    background-color: rgba(25, 27, 29, 0.527);
+}
+
+.Income{
+    font-size: 24px;
+    padding-bottom: 10px;
+}   
+
+.amt{
+    padding-top: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.input-container{
+    padding: 10px 0px ;
+}
+
+.input-container p{
+    padding: 10px 0px 5px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.input-container input,textarea{
+    padding: 10px;
+    font-size: 16px;
+    outline: none;
+    background-color: white;
+    color: black;
+}
+
+.input-container textarea{
+    resize: none;
+}
+
+.input-field{
+    padding-bottom: 10px;
+}
+
+.action-btn{
+    display:flex ;
+    width: 100%;
+    justify-content: center;
+}
+
+.action-btn button{
+    width: max-content;
+    padding: 10px;
+    background-color: rgb(73, 112, 240);
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+    outline: none;
+    border-radius: 8px;
+
+}

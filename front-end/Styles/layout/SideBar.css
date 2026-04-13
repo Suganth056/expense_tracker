@@ -1,0 +1,44 @@
+.sidebar {
+    transition: all ease 0.4s;
+}
+
+.nav-section{
+    padding-top: 10px;
+    gap: 5px;
+
+}
+
+.nav-section .navList{
+    width: 100%;
+    text-align: center;
+    padding: 8px;
+    font-size: 14px;
+    border-radius: 8px;
+
+}
+
+.nav-section .navList:hover{
+    background-color: rgb(90, 110, 94);
+    cursor: pointer;
+
+}
+
+.x-mark{
+    display: none;
+}
+
+@media (max-width:700px) {
+    .sidebar {
+        z-index: 10;
+        position: fixed;
+        max-height: 100vh;
+
+    }
+    .x-mark{
+    display: block;
+    }
+
+
+    
+    
+}
