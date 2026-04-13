@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Request, Response
-from config.settings import INCOME_TABLE
 from config.db_config import get_connection
+from config.settings import EXPENDITURE_TABLE
 from datetime import date,datetime
 
-income_router = APIRouter()
+expenditure_router = APIRouter()
 
-
-@income_router.post('/post-income')
+@expenditure_router.post('/post-expenditure')
 async def post_income(request:Request):
     body =await request.json()
     userId = body.get('user_id')
@@ -18,7 +17,7 @@ async def post_income(request:Request):
         conn = get_connection()
         today = date.today()
         if(conn):
-            query = f"INSERT INTO {INCOME_TABLE}(userId,income_date,amount,reason) VALUES (?,?,?,?)"
+            query = f"INSERT INTO {EXPENDITURE_TABLE}(user_id,exp_date,amount,reason) VALUES (?,?,?,?)"
             cursor = conn.cursor()
             cursor.execute(query,[userId,today,amount,reason])
 
@@ -35,16 +34,15 @@ async def post_income(request:Request):
 
     return{"code":200,"message":"Successfully Inserted"}
 
-
-@income_router.get('/income-history')
+@expenditure_router.get('/expenditure-history')
 async def get_income_details(user_id:int):
     conn = None
     try:
         conn = get_connection()
-        query = f"select * from {INCOME_TABLE} where userId = ?"
+        query = f"select * from {EXPENDITURE_TABLE}"
         cursor = conn.cursor()
 
-        res = cursor.execute(query,[user_id]).fetchall()
+        res = cursor.execute(query).fetchall()
         
 
         result = []
@@ -67,7 +65,7 @@ async def get_income_details(user_id:int):
             conn.close
     return {"code":200,"status":"success","data":result}
 
-@income_router.delete('/delete-entry')
+@expenditure_router.delete('/delete-entry')
 async def delete_entry(request:Request):
     body =await request.json()
     id = body.get("id")
@@ -76,7 +74,7 @@ async def delete_entry(request:Request):
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        query = f"delete from {INCOME_TABLE} where id = ?"
+        query = f"delete from {EXPENDITURE_TABLE} where id = ?"
         res = cursor.execute(query,[id])
         conn.commit()
     except Exception as e:
@@ -88,13 +86,14 @@ async def delete_entry(request:Request):
             conn.close()
     return{"code":200,"message":"successfully Deleted"}
 
-@income_router.get('/total-income')
+
+@expenditure_router.get('/total-expenditure')
 def get_total_salary(user_id:int):
     conn = None
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        query = f"select sum(amount) from {INCOME_TABLE} where userId=?"
+        query = f"select sum(amount) from {EXPENDITURE_TABLE} where user_id=?"
         res = cursor.execute(query,[user_id]).fetchone()
         print(res)
 
@@ -109,7 +108,7 @@ def get_total_salary(user_id:int):
     return{"code":200,"message":"Success","total":res[0]}
 
 
-@income_router.get('/this-month-income')
+@expenditure_router.get('/this-month-expenditure')
 def get_this_month_salary(user_id:int):
     conn = None
     now = datetime.now()
@@ -124,8 +123,8 @@ def get_this_month_salary(user_id:int):
         select sum(amount) 
         from (
         select amount
-        from {INCOME_TABLE}
-        where month(income_date) = ? and year(income_date) = ? and userId = ?
+        from {EXPENDITURE_TABLE}
+        where month(exp_date) = ? and year(exp_date) = ? and user_id = ?
         )as thismonth
         
         """

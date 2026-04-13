@@ -2,53 +2,54 @@
 
 import { Box, Button, Typography } from "@mui/material";
 import '@/Styles/Entry/AllEntry.css'
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import DialogueBox from '@/components/MuiComponents/DialogueContainer'
 import TransactionHistory from "../common/TransactionHistory";
 import { useAuthContext } from "@/Context/AuthContext";
 import { useRouter } from "next/navigation";
-import { BASE_URL,INCOME } from "@/ENUM";
+import { BASE_URL, EXPENDITURE } from "@/ENUM";
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 
 
-const IncomeEntry = () => {
+const ExpenditureEntry = () => {
 
     const [openDialog, setOpenDialog] = useState<boolean>(false);
     const router = useRouter();
-    
-    const {user,setOpenSnackbar,setMessage,setStatusMessage,apiRequest} = useAuthContext();
-    const [amount,setAmount] = useState<number>(0);
-    const [reason,setReason] = useState<string>("");
-    const [historyData,setHistoryData] = useState([]);
-    const [totalIncome, setTotalIncome] = useState<number>(0);
-    const [thisMonthIncome,setThisMonthIncome] = useState<number>(0);
-    
-    useEffect(()=>{
+
+    const { user, setOpenSnackbar, setMessage, setStatusMessage, apiRequest } = useAuthContext();
+    const [amount, setAmount] = useState<number>(0);
+    const [reason, setReason] = useState<string>("");
+    const [historyData, setHistoryData] = useState([]);
+    const [totalExp,setTotalExp] = useState<number>(0);
+    const [thisMonthExp,setThisMonthExp] = useState<number>(0);
+
+    useEffect(() => {
+        if(user)
         fetchIncomeHistory()
-    },[])
+    }, [])
 
-    useEffect(()=>{
-        fetchTotalIncome();
-        fetchThisMonthIncome();
-    },[historyData])
+    useEffect(() => {
+        fetchTotalExp();
+        fetchThisMonthExp();
+    }, [historyData])
 
-    const fetchTotalIncome = async()=>{
+    const fetchTotalExp = async () => {
         console.log(user?.id)
-        const res = await fetch(`${BASE_URL}${INCOME}/total-income?user_id=${user?.id}`);
-        const data =await res.json()
+        const res = await fetch(`${BASE_URL}${EXPENDITURE}/total-expenditure?user_id=${user?.id}`);
+        const data = await res.json()
         console.log(data)
-        if(data?.code == 200){
-            setTotalIncome(data?.total)
+        if (data?.code == 200) {
+            setTotalExp(data?.total)
         }
     }
 
-    const fetchThisMonthIncome = async()=>{
+    const fetchThisMonthExp = async () => {
         console.log(user?.id)
-        const res = await fetch(`${BASE_URL}${INCOME}/this-month-income?user_id=${user?.id}`);
-        const data =await res.json()
+        const res = await fetch(`${BASE_URL}${EXPENDITURE}/this-month-expenditure?user_id=${user?.id}`);
+        const data = await res.json()
         console.log(data)
-        if(data?.code == 200){
-            setThisMonthIncome(data?.total)
+        if (data?.code == 200) {
+            setThisMonthExp(data?.total)
         }
     }
 
@@ -56,75 +57,74 @@ const IncomeEntry = () => {
         setOpenDialog(false)
     }
 
-    const addIncome = () => {
-        console.log("Dialog Added")
+    const addExpenditure = () => {
         setOpenDialog(true)
     }
 
-    const fetchIncomeHistory=async()=>{
-        const res = await fetch(`${BASE_URL}${INCOME}/income-history?user_id=${user?.id}`)
+    const fetchIncomeHistory = async () => {
+        const res = await fetch(`${BASE_URL}${EXPENDITURE}/expenditure-history?user_id=${user?.id}`)
         const data = await res.json()
         console.log(data)
-        if(data?.code == 200){
+        if (data?.code == 200) {
             setHistoryData(data?.data)
         }
         handleCloseDialog();
 
     }
 
-    const postIncome = async(obj:any)=>{
-        const res = await fetch(`${BASE_URL}${INCOME}/post-income`,{
-            method:"POST",
-            headers:{
-                'Content-Type':"application/json"
+    const postIncome = async (obj: any) => {
+        const res = await fetch(`${BASE_URL}${EXPENDITURE}/post-expenditure`, {
+            method: "POST",
+            headers: {
+                'Content-Type': "application/json"
             },
-            body:JSON.stringify(obj),
+            body: JSON.stringify(obj),
 
         })
-        const data=await res.json();
+        const data = await res.json();
         fetchIncomeHistory()
-        
+
     }
 
-    const handleAddIncome = ()=>{
-        if(!amount){
+    const handleAddExpenditure = () => {
+        if (!amount) {
             setMessage("Please Fill the Amount")
             setStatusMessage("warning")
             setOpenSnackbar(true)
             return
         }
-        else if(!reason || reason.length < 1){
+        else if (!reason || reason.length < 1) {
             setMessage("Please Fill the Reason")
             setStatusMessage("warning")
             setOpenSnackbar(true)
             return
         }
-        else{
-            const obj = {"user_id":user?.id,amount,reason}
-            console.log(obj)
+        else {
+            const obj = { "user_id": user?.id, amount, reason }
+
             postIncome(obj);
         }
     }
 
-    const handleDeleteRow=async(id:any)=>{
-        const res = await fetch(`${BASE_URL}${INCOME}/delete-entry`,{
-            method:"DELETE",
-            headers:{
-                'Content-Type':"application/json"
+    const handleDeleteRow = async (id: any) => {
+        const res = await fetch(`${BASE_URL}${EXPENDITURE}/delete-entry`, {
+            method: "DELETE",
+            headers: {
+                'Content-Type': "application/json"
             },
-            body:JSON.stringify({id})
+            body: JSON.stringify({ id })
         })
 
-        const data =await res?.json()
+        const data = await res?.json()
 
-        if(data?.code == 200){
+        if (data?.code == 200) {
             setMessage("Deleted Successfully")
             setStatusMessage("success")
             setOpenSnackbar(true)
             fetchIncomeHistory()
             return
         }
-        else{
+        else {
             setMessage("Problem With Deleting")
             setStatusMessage("warning")
             setOpenSnackbar(true)
@@ -136,17 +136,17 @@ const IncomeEntry = () => {
         <div style={{ width: "100%", boxSizing: "border-box", padding: "10px" }}>
             <Box sx={{ display: "grid", gridTemplateColumns: "33% 33% 33%", gap: "10px" }}>
                 <Box className="highlight-box">
-                    <Typography className="Income">Total Income</Typography>
-                    <Typography className="amt">{totalIncome>0?totalIncome:0}</Typography>
+                    <Typography className="Income">Total Expenditure</Typography>
+                    <Typography className="amt">{totalExp>0?totalExp:0}</Typography>
                 </Box>
                 <Box className="highlight-box">
-                    <Typography className="Income">This Month Income</Typography>
-                    <Typography className="amt">{thisMonthIncome>0?thisMonthIncome:0}</Typography>
+                    <Typography className="Income">This Month Expenditure</Typography>
+                    <Typography className="amt">{thisMonthExp>0?thisMonthExp:0}</Typography>
                 </Box>
                 <Box className="" sx={{ width: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                     <div style={{ width: "100%", display: "flex", flexDirection: "row", justifyContent: "center", boxSizing: "border-box" }}>
                         <Button className="add" sx={{ alignSelf: "center", width: "50px", fontSize: "30px", border: "2px solid white", borderRadius: "100px", height: "50px" }}
-                            onClick={() => { addIncome() }}
+                            onClick={() => { addExpenditure() }}
                         >+</Button>
                     </div>
 
@@ -157,40 +157,40 @@ const IncomeEntry = () => {
 
             <DialogueBox open={openDialog}
                 handleClose={handleCloseDialog}
-                heading="Add Income"
+                heading="Add Expenditure"
                 content={
                     <div className="input-container">
                         <div className="input-field amtEntry">
                             <p>Amount</p>
-                            <input type="number" 
-                            onChange={(e)=>{setAmount(Number(e.target.value))}}
-                            value={amount}
+                            <input type="number"
+                                onChange={(e) => { setAmount(Number(e.target.value)) }}
+                                value={amount}
                             />
                         </div>
 
                         <div className="input-field Reason-field">
                             <p>Reason</p>
                             <textarea placeholder="Enter The Reason" style={{ height: "80px" }}
-                            onChange={(e)=>{setReason(String(e.target.value))}}
+                                onChange={(e) => { setReason(String(e.target.value)) }}
                             ></textarea>
                         </div>
 
 
                         <div className="action-btn">
-                            <button onClick={handleAddIncome}>Submit</button>
+                            <button onClick={() => { handleAddExpenditure() }}>Submit</button>
                         </div>
                     </div>
                 }
             />
 
 
-            <div style={{width:"100%",padding:"30px 2px 10px"}}>
-                <p className="heading">Income History</p>
-                <TransactionHistory data={historyData} handleDeleteRow={handleDeleteRow}/>
+            <div style={{ width: "100%", padding: "30px 2px 10px" }}>
+                <p className="heading">Expenditure History</p>
+                <TransactionHistory data={historyData} handleDeleteRow={handleDeleteRow} />
             </div>
         </div>
     )
 }
 
 
-export default IncomeEntry;
+export default ExpenditureEntry;

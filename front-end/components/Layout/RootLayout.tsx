@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 // Pages / Components
 import Dashboard from '@/components/Dashboard';
 import IncomeEntry from '@/components/Entry/IncomeEntry';
+import ExpenditureEntry from '@/components/Entry/ExpenditureEntry'
 
 const RootLayout = () => {
     const { isSideBarOpen } = useTheme();
@@ -22,6 +23,8 @@ const RootLayout = () => {
 
             case '/income-entry':
                 return <IncomeEntry />;
+            case '/expense-entry':
+                return <ExpenditureEntry />
 
             default:
                 return <div>Page Not Found</div>;

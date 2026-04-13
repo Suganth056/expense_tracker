@@ -1,8 +1,10 @@
 
 SERVER_NAME = r"EDS\SQLEXPRESS"
 
-DATABASE_NAME = r"Expense_Tracker"
+DATABASE_NAME = "Expense_Tracker"
 
-USER_TABLES = r"UserDetails"
+USER_TABLES = "UserDetails"
 
-INCOME_TABLE = r"Income_Entry"
+INCOME_TABLE = "Income_Entry"
+
+EXPENDITURE_TABLE = "exp_entry"
