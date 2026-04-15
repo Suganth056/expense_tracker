@@ -7,3 +7,4 @@ export const LOGIN = "/auth/login"
 
 export const INCOME = '/income'
 export const EXPENDITURE = '/exp'
+export const SAVING = '/saving'

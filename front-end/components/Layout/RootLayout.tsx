@@ -55,17 +55,18 @@ const RootLayout = () => {
                 width: "100%",
                 display: "flex",
                 height: "100vh",
-                boxSizing: "border-box"
+                boxSizing: "border-box",
+                overflowX: "hidden"
             }}
         >
             {/* Sidebar */}
             <SideBar />
 
             {/* Main Content */}
-            <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1, minWidth: 0, overflowX: "hidden" }}>
                 <TopBar />
 
-                <main style={{ padding: "16px" }}>
+                <main style={{ padding: "16px", boxSizing: "border-box" }}>
                     {renderComponent()}
                 </main>
             </Box>
