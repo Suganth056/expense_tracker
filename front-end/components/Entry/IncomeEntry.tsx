@@ -9,6 +9,7 @@ import { useAuthContext } from "@/Context/AuthContext";
 import { useRouter } from "next/navigation";
 import { BASE_URL, INCOME } from "@/ENUM";
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
+import PaginationComponent from "../MuiComponents/PaginationComponent";
 
 
 const IncomeEntry = () => {
@@ -25,10 +26,13 @@ const IncomeEntry = () => {
     const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState<any>(null);
 
+    const [page, setPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(0);
+
     useEffect(() => {
         if (!user) return;
         fetchIncomeHistory();
-    }, [user]);
+    }, [user,page]);
 
     useEffect(() => {
         if (!user) return;
@@ -71,11 +75,12 @@ const IncomeEntry = () => {
     }
 
     const fetchIncomeHistory = async () => {
-        const res = await fetch(`${BASE_URL}${INCOME}/income-history?user_id=${user?.id}`)
+        const res = await fetch(`${BASE_URL}${INCOME}/income-history?user_id=${user?.id}&page=${page}`);
         const data = await res.json()
         console.log(data)
         if (data?.code == 200) {
             setHistoryData(data?.data)
+            setTotalPages(data?.totalPages)
         }
         handleCloseDialog();
 
@@ -225,6 +230,12 @@ const IncomeEntry = () => {
                 <p className="heading">Income History</p>
                 <TransactionHistory data={historyData} handleDeleteRow={handleDeleteRow} />
             </div>
+
+            <div className="pagination-container" >
+                <PaginationComponent data={historyData} count={totalPages} page={page} setPage={setPage} />
+
+            </div>
+
         </div>
     )
 }

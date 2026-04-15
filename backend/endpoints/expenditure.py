@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Response
 from config.db_config import get_connection
 from config.settings import EXPENDITURE_TABLE
 from datetime import date,datetime
+import math
 
 expenditure_router = APIRouter()
 
@@ -35,35 +36,64 @@ async def post_income(request:Request):
     return{"code":200,"message":"Successfully Inserted"}
 
 @expenditure_router.get('/expenditure-history')
-async def get_income_details(user_id:int):
+async def get_income_details(user_id: int, page: int = 1):
     conn = None
     try:
         conn = get_connection()
-        query = f"select * from {EXPENDITURE_TABLE} where user_id = ? order by exp_date desc"
         cursor = conn.cursor()
 
-        res = cursor.execute(query, [user_id]).fetchall()
-        
+        limit = 10
+        offset = (page - 1) * limit
+
+        # ✅ Get paginated data
+        data_query = f"""
+            SELECT *
+            FROM {EXPENDITURE_TABLE}
+            WHERE user_id = ?
+            ORDER BY exp_date DESC
+            OFFSET ? ROWS
+            FETCH NEXT ? ROWS ONLY
+        """
+
+        res = cursor.execute(data_query, [user_id, offset, limit]).fetchall()
+
+        # ✅ Get total count
+        count_query = f"""
+            SELECT COUNT(*)
+            FROM {EXPENDITURE_TABLE}
+            WHERE user_id = ?
+        """
+
+        total_count = cursor.execute(count_query, [user_id]).fetchone()[0]
+
+        total_pages = math.ceil(total_count / limit)
 
         result = []
         for row in res:
             result.append({
                 "id": row[0],
                 "user_id": row[1],
-                "date": row[2],  # convert date to string
+                "date": row[2],
                 "amount": row[3],
                 "reason": row[4]
             })
 
     except Exception as e:
-        return {"code":400,"message":"Error in Fetching Details"}
+        print("ERROR:", e)   # 🔥 add this for debugging
+        return {"code": 400, "message": "Error in Fetching Details"}
 
     finally:
         if conn:
             if cursor:
                 cursor.close()
-            conn.close
-    return {"code":200,"status":"success","data":result}
+            conn.close()
+
+    return {
+        "code": 200,
+        "status": "success",
+        "data": result,
+        "total_pages": total_pages
+    }
 
 @expenditure_router.delete('/delete-entry')
 async def delete_entry(request:Request):

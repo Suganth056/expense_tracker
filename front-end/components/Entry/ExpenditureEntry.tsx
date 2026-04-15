@@ -9,7 +9,8 @@ import { useAuthContext } from "@/Context/AuthContext";
 import { useRouter } from "next/navigation";
 import { BASE_URL, EXPENDITURE } from "@/ENUM";
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
-
+import PaginationComponent from "../MuiComponents/PaginationComponent";
+import Pagination from "@mui/material/Pagination";
 
 const ExpenditureEntry = () => {
 
@@ -25,10 +26,15 @@ const ExpenditureEntry = () => {
     const [openWarningDialog,setWarningOpeningDialog] = useState<boolean>(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState<any>(null);
 
+    // Pagination States
+    const [page, setPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(0);
+
+
     useEffect(() => {
         if (!user) return;
         fetchExpenditureHistory()
-    }, [user])
+    }, [user,page])
 
     useEffect(() => {
         if (!user) return;
@@ -107,11 +113,13 @@ const ExpenditureEntry = () => {
     }
 
     const fetchExpenditureHistory = async () => {
-        const res = await fetch(`${BASE_URL}${EXPENDITURE}/expenditure-history?user_id=${user?.id}`)
+        const res = await fetch(`${BASE_URL}${EXPENDITURE}/expenditure-history?user_id=${user?.id}&page=${page}`);
         const data = await res.json()
         console.log(data)
         if (data?.code == 200) {
             setHistoryData(data?.data)
+            setTotalPages(data?.total_pages)
+            console.log("Total Pages:", data?.total_pages);
         }
         handleCloseDialog();
 
@@ -225,6 +233,10 @@ const ExpenditureEntry = () => {
             <div style={{ width: "100%", padding: "30px 2px 10px" }}>
                 <p className="heading">Expenditure History</p>
                 <TransactionHistory data={historyData} handleDeleteRow={handleDeleteRow} />
+            </div>
+            <div className="pagination-container" >
+                <PaginationComponent  data={historyData} count={totalPages} page={page} setPage={setPage} />
+
             </div>
         </div>
     )

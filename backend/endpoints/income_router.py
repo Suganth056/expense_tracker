@@ -37,14 +37,27 @@ async def post_income(request:Request):
 
 
 @income_router.get('/income-history')
-async def get_income_details(user_id:int):
+async def get_income_details(user_id:int,page:int=1):
     conn = None
+    limit = 10
+    offset = (page - 1) * limit
     try:
         conn = get_connection()
-        query = f"select * from {INCOME_TABLE} where userId = ?"
+        query = f"""
+        select * 
+        from {INCOME_TABLE} 
+        where userId = ?
+        order by income_date desc
+        offset ? rows
+        fetch next ? rows only
+        """
         cursor = conn.cursor()
 
-        res = cursor.execute(query,[user_id]).fetchall()
+        res = cursor.execute(query,[user_id,offset,limit]).fetchall()
+
+        total_query = f"select count(*) from {INCOME_TABLE} where userId = ?"
+        total_res = cursor.execute(total_query,[user_id]).fetchone()
+        total_pages = (total_res[0] + limit - 1) // limit  # Calculate total pages
         
 
         result = []
@@ -65,7 +78,7 @@ async def get_income_details(user_id:int):
             if cursor:
                 cursor.close()
             conn.close
-    return {"code":200,"status":"success","data":result}
+    return {"code":200,"status":"success","data":result,"totalPages":total_pages}
 
 @income_router.delete('/delete-entry')
 async def delete_entry(request:Request):
