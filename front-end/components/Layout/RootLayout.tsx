@@ -5,15 +5,33 @@ import SideBar from "./SideBar";
 import TopBar from "./TopBar";
 import { useTheme } from "@/Context/ThemeProvider";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { useAuthContext } from "@/Context/AuthContext";
 
 // Pages / Components
 import Dashboard from '@/components/Dashboard';
 import IncomeEntry from '@/components/Entry/IncomeEntry';
-import ExpenditureEntry from '@/components/Entry/ExpenditureEntry'
+import ExpenditureEntry from '@/components/Entry/ExpenditureEntry';
 
 const RootLayout = () => {
     const { isSideBarOpen } = useTheme();
     const pathName = usePathname();
+    const { user, accessToken, isTokenExpired, refreshAccessToken } = useAuthContext();
+
+    useEffect(() => {
+        const validateToken = async () => {
+            if (user && !accessToken) {
+                await refreshAccessToken();
+                return;
+            }
+
+            if (accessToken && isTokenExpired(accessToken)) {
+                await refreshAccessToken();
+            }
+        };
+
+        validateToken();
+    }, [user, accessToken, isTokenExpired, refreshAccessToken]);
 
     // Handle routing manually
     const renderComponent = () => {

@@ -22,13 +22,16 @@ const ExpenditureEntry = () => {
     const [historyData, setHistoryData] = useState([]);
     const [totalExp,setTotalExp] = useState<number>(0);
     const [thisMonthExp,setThisMonthExp] = useState<number>(0);
+    const [openWarningDialog,setWarningOpeningDialog] = useState<boolean>(false);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<any>(null);
 
     useEffect(() => {
-        if(user)
-        fetchIncomeHistory()
-    }, [])
+        if (!user) return;
+        fetchExpenditureHistory()
+    }, [user])
 
     useEffect(() => {
+        if (!user) return;
         fetchTotalExp();
         fetchThisMonthExp();
     }, [historyData])
@@ -57,11 +60,53 @@ const ExpenditureEntry = () => {
         setOpenDialog(false)
     }
 
+    const handleCloseWarningDialog = () => {
+        setWarningOpeningDialog(false)
+        setConfirmDeleteId(null)
+     }
+
+     const confirmDelete = async () => {
+        setWarningOpeningDialog(false)
+        if (!confirmDeleteId) return
+
+        if (!user?.id) {
+            setMessage("Unable to verify user before delete")
+            setStatusMessage("warning")
+            setOpenSnackbar(true)
+            setConfirmDeleteId(null)
+            return
+        }
+
+        const res = await fetch(`${BASE_URL}${EXPENDITURE}/delete-entry`, {
+            method: "DELETE",
+            headers: {
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify({ id: confirmDeleteId, user_id: user.id })
+        })
+
+        const data = await res?.json()
+
+        if (data?.code == 200) {
+            setMessage("Deleted Successfully")
+            setStatusMessage("success")
+            setOpenSnackbar(true)
+            fetchExpenditureHistory()
+        }
+        else {
+            setMessage(data?.message || "Problem With Deleting")
+            setStatusMessage("warning")
+            setOpenSnackbar(true)
+        }
+
+        setConfirmDeleteId(null)
+     }
+
     const addExpenditure = () => {
         setOpenDialog(true)
     }
 
-    const fetchIncomeHistory = async () => {
+    const fetchExpenditureHistory = async () => {
         const res = await fetch(`${BASE_URL}${EXPENDITURE}/expenditure-history?user_id=${user?.id}`)
         const data = await res.json()
         console.log(data)
@@ -72,7 +117,7 @@ const ExpenditureEntry = () => {
 
     }
 
-    const postIncome = async (obj: any) => {
+    const postExpenditure = async (obj: any) => {
         const res = await fetch(`${BASE_URL}${EXPENDITURE}/post-expenditure`, {
             method: "POST",
             headers: {
@@ -82,7 +127,7 @@ const ExpenditureEntry = () => {
 
         })
         const data = await res.json();
-        fetchIncomeHistory()
+        fetchExpenditureHistory()
 
     }
 
@@ -102,34 +147,13 @@ const ExpenditureEntry = () => {
         else {
             const obj = { "user_id": user?.id, amount, reason }
 
-            postIncome(obj);
+            postExpenditure(obj);
         }
     }
 
     const handleDeleteRow = async (id: any) => {
-        const res = await fetch(`${BASE_URL}${EXPENDITURE}/delete-entry`, {
-            method: "DELETE",
-            headers: {
-                'Content-Type': "application/json"
-            },
-            body: JSON.stringify({ id })
-        })
-
-        const data = await res?.json()
-
-        if (data?.code == 200) {
-            setMessage("Deleted Successfully")
-            setStatusMessage("success")
-            setOpenSnackbar(true)
-            fetchIncomeHistory()
-            return
-        }
-        else {
-            setMessage("Problem With Deleting")
-            setStatusMessage("warning")
-            setOpenSnackbar(true)
-            return
-        }
+        setConfirmDeleteId(id)
+        setWarningOpeningDialog(true);
     }
 
     return (
@@ -178,6 +202,20 @@ const ExpenditureEntry = () => {
 
                         <div className="action-btn">
                             <button onClick={() => { handleAddExpenditure() }}>Submit</button>
+                        </div>
+                    </div>
+                }
+            />
+
+            <DialogueBox open={openWarningDialog}
+                handleClose={handleCloseWarningDialog}
+                heading="Delete Expenditure"
+                content={
+                    <div className="input-container">
+                        Are you sure you want to delete this entry?
+                        <div className="action-btn" style={{display:"flex",padding:"10px",width:"100%",justifyContent:"flex-end"}}>
+                            <button onClick={confirmDelete} style={{alignSelf:"right",backgroundColor:"orange",marginRight:"10px"}}>Yes</button>
+                            <button onClick={handleCloseWarningDialog} style={{alignSelf:"right"}}>No</button>
                         </div>
                     </div>
                 }

@@ -71,16 +71,23 @@ async def get_income_details(user_id:int):
 async def delete_entry(request:Request):
     body =await request.json()
     id = body.get("id")
-    print(id)
+    user_id = body.get("user_id")
+
+    if not id or not user_id:
+        return {"code":400,"status":"error","message":"Missing delete id or user_id"}
+
     conn = None
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        query = f"delete from {INCOME_TABLE} where id = ?"
-        res = cursor.execute(query,[id])
+        query = f"delete from {INCOME_TABLE} where id = ? and userId = ?"
+        res = cursor.execute(query,[id, user_id])
         conn.commit()
+
+        if cursor.rowcount == 0:
+            return {"code":404,"status":"error","message":"Entry not found or unauthorized"}
     except Exception as e:
-        return {"code":400,"status":"error"}
+        return {"code":400,"status":"error","message":"Error deleting entry"}
     finally:
         if conn:
             if cursor:

@@ -19,6 +19,8 @@ interface AuthContextType {
     login: (params: any) => Promise<any>;
     logout: () => void;
     apiRequest: (url: string, options?: any) => Promise<any>;
+    refreshAccessToken: () => Promise<string | null>;
+    isTokenExpired: (token: string) => boolean;
 
 }
 
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }: any) => {
     // 🔁 Refresh Access Token
     const refreshAccessToken = async () => {
         try {
-            const res = await fetch(`${BASE_URL}/refresh`, {
+            const res = await fetch(`${BASE_URL}/auth/refresh`, {
                 method: "POST",
                 credentials: "include", // 🔥 important
             });
@@ -174,6 +176,7 @@ export const AuthProvider = ({ children }: any) => {
     // 🔄 Restore user on reload
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
+        console.log(storedUser)
         if (storedUser) {
             setUser(JSON.parse(storedUser));
         }
@@ -198,6 +201,8 @@ export const AuthProvider = ({ children }: any) => {
                 login,
                 logout,
                 apiRequest,
+                refreshAccessToken,
+                isTokenExpired,
             }}
 
 
