@@ -5,7 +5,7 @@ import { BASE_URL, INCOME, EXPENDITURE, SAVING } from '@/ENUM';
 import "@/Styles/dashboard/Dashboard.css";
 import { useAuthContext } from "@/Context/AuthContext";
 import MonthlyExpenseChart from './ChartComponents/MonthlyChart';
-
+import DailyChart from './ChartComponents/DailyChart';
 const Dashboard = () => {
 
     const { user } = useAuthContext();
@@ -20,6 +20,8 @@ const Dashboard = () => {
     const [monthlyYear, setMonthlyYear] = useState<number>(new Date().getFullYear());
 
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
+    const [dailyData, setDailyData] = useState<any[]>([]);
+    const [dailyMonth, setDailyMonth] = useState<number>(new Date().getMonth() + 1);
 
     // 🔥 Year list (Reusable)
     const currentYear = new Date().getFullYear();
@@ -28,10 +30,30 @@ const Dashboard = () => {
         (_, i) => currentYear - i
     );
 
+    const monthOptions = [
+        { value: 1, label: 'Jan' },
+        { value: 2, label: 'Feb' },
+        { value: 3, label: 'Mar' },
+        { value: 4, label: 'Apr' },
+        { value: 5, label: 'May' },
+        { value: 6, label: 'Jun' },
+        { value: 7, label: 'Jul' },
+        { value: 8, label: 'Aug' },
+        { value: 9, label: 'Sep' },
+        { value: 10, label: 'Oct' },
+        { value: 11, label: 'Nov' },
+        { value: 12, label: 'Dec' },
+    ];
+
     const endpointMap: any = {
         income: 'each-month-income',
         exp: 'each-month-expenditure',
         saving: 'each-month-saving'
+    };
+
+    const dailyEndpointMap: any = {
+        income: 'each-day-income',
+        exp: 'each-day-expenditure',
     };
 
     // ================================
@@ -52,6 +74,15 @@ const Dashboard = () => {
         fetchMonthlyData();
     }, [user, monthlyYear, optionValue]);
 
+    useEffect(() => {
+        if (!user) return;
+        if (optionValue === 'income' || optionValue === 'exp') {
+            fetchDailyData();
+        } else {
+            setDailyData([]);
+        }
+    }, [user, optionValue, monthlyYear, dailyMonth]);
+
     const fetchMonthlyData = async () => {
         try {
             const res = await fetch(
@@ -70,6 +101,24 @@ const Dashboard = () => {
         } catch (err) {
             console.log(err);
             setMonthlyData([]);
+        }
+    };
+
+    const fetchDailyData = async () => {
+        try {
+            const res = await fetch(
+                `${BASE_URL}/${optionValue}/${dailyEndpointMap[optionValue]}?user_id=${user?.id}&year=${monthlyYear}&month=${dailyMonth}`
+            );
+            const data = await res.json();
+            console.log('Daily Data Response:', data);
+            if (data?.code === 200) {
+                setDailyData(data?.data || []);
+            } else {
+                setDailyData([]);
+            }
+        } catch (err) {
+            console.log(err);
+            setDailyData([]);
         }
     };
 
@@ -177,6 +226,50 @@ const Dashboard = () => {
                     }
                 />
             </div>
+
+            {(optionValue === 'income' || optionValue === 'exp') && (
+                <div className="chart-card">
+                    <div className="chart-card-header">
+                        <div className="chart-card-title">
+                            <h2>
+                                {optionValue === 'income'
+                                    ? 'Daily Income'
+                                    : 'Daily Expenditure'}
+                            </h2>
+                            <p className="chart-subtitle">
+                                {monthlyYear} • {monthOptions.find((m) => m.value === dailyMonth)?.label}
+                            </p>
+                        </div>
+
+                        <div className="chart-year-selector">
+                            <label htmlFor="daily-month-select">Month</label>
+                            <select
+                                id="daily-month-select"
+                                value={dailyMonth}
+                                onChange={(e) => setDailyMonth(Number(e.target.value))}
+                            >
+                                {monthOptions.map((month) => (
+                                    <option key={month.value} value={month.value}>
+                                        {month.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <DailyChart
+                        data={dailyData.map((item: any) => ({
+                            day: item.day,
+                            amount: item.amount,
+                        }))}
+                        title={
+                            optionValue === 'income'
+                                ? 'Daily Income'
+                                : 'Daily Expenditure'
+                        }
+                    />
+                </div>
+            )}
 
         </div>
     );

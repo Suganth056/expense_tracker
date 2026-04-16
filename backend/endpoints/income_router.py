@@ -198,3 +198,38 @@ def get_each_month_income(user_id:int,year:int=2026):
     
     return{"code":200,"message":"Success","data":result,"monthOrder":month_order}
         
+
+
+@income_router.get('/each-day-income')
+def get_each_day_income(user_id:int,month:int,year:int):
+    conn = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = f"""
+        select day(income_date) as day, sum(amount) as Amount
+        from {INCOME_TABLE}
+        where year(income_date) = ? and month(income_date) = ? and userId = ?
+        group by day(income_date)
+        order by day(income_date)
+        """
+        res = cursor.execute(query,[year,month,user_id]).fetchall()
+        days = []
+        data = []
+        for row in res:
+            data.append(
+            {
+            "day":row[0],
+            "amount":row[1]
+            }
+        )
+            days.append(row[0])
+            print(data)
+    except Exception as e:
+        return {"code":400,"status":"Not Found"}                
+    finally:
+        if conn:
+                if cursor:
+                    cursor.close()
+                conn.close()
+    return{"code":200,"message":"Success","data":data,"days":days}

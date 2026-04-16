@@ -213,4 +213,39 @@ def get_each_month_expenditure(user_id:int,year:int=2026):
     month_order.sort(key=lambda x: datetime.strptime(x, '%B').month)
     
     return{"code":200,"message":"Success","data":result,"monthOrder":month_order}
+
+
+@expenditure_router.get('/each-day-expenditure')
+def get_each_day_expenditure(user_id:int, month:int, year:int):
+    conn = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = f"""
+        select day(exp_date) as day, sum(amount) as Amount
+        from {EXPENDITURE_TABLE}
+        where year(exp_date) = ? and month(exp_date) = ? and user_id = ?
+        group by day(exp_date)
+        order by day(exp_date)
+        """
+        res = cursor.execute(query,[year,month,user_id]).fetchall()
+
+        result = []
+        for row in res:
+            result.append({
+                "day": row[0],
+                "amount": row[1]
+            })
+
+    except Exception as e:
+        print("ERROR:", e)
+        return {"code":400,"status":"Not Found"}
+
+    finally:
+        if conn:
+            if cursor:
+                cursor.close()
+            conn.close()
+
+    return {"code":200,"message":"Success","data":result}
         
