@@ -132,7 +132,8 @@ def get_total_salary(user_id:int):
         cursor = conn.cursor()
         query = f"select sum(amount) from {EXPENDITURE_TABLE} where user_id=?"
         res = cursor.execute(query,[user_id]).fetchone()
-        print(res)
+        if(res[0] is None):
+            return {"code":200,"message":"Success","total":0}
 
     except Exception as e:
         return {"code":400,"status":"Not Found"}
@@ -177,3 +178,39 @@ def get_this_month_salary(user_id:int):
                     cursor.close()
                 conn.close()
     return{"code":200,"message":"Success","total":res[0]}
+
+
+@expenditure_router.get('/each-month-expenditure')
+def get_each_month_expenditure(user_id:int,year:int=2026):
+    conn = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = f"""
+        select DATENAME(MONTH,exp_date) as month, sum(amount) as Amount
+        from {EXPENDITURE_TABLE}
+        where year(exp_date) = ? and user_id = ?
+        group by DATENAME(MONTH,exp_date),MONTH(exp_date)
+        order by DATENAME(MONTH,exp_date)
+        """
+        res = cursor.execute(query,[year,user_id]).fetchall()
+
+    except Exception as e:
+        return {"code":400,"status":"Not Found"}
+    finally:
+        if conn:
+                if cursor:
+                    cursor.close()
+                conn.close()
+    result = []
+    month_order = []
+    for row in res:
+        result.append({
+            "month": row[0],
+            "amount": row[1]
+        })   
+        month_order.append(row[0])
+    month_order.sort(key=lambda x: datetime.strptime(x, '%B').month)
+    
+    return{"code":200,"message":"Success","data":result,"monthOrder":month_order}
+        

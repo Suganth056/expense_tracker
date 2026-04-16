@@ -59,6 +59,7 @@ const Dashboard = () => {
             );
 
             const data = await res.json();
+            console.log("Monthly Data Response:", data);
 
             if (data?.code === 200) {
                 setMonthlyData(data?.data || []);

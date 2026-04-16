@@ -128,7 +128,6 @@ def get_total_salary(user_id:int):
                 conn.close()
     return{"code":200,"message":"Success","total":res[0]}
 
-
 @income_router.get('/this-month-income')
 def get_this_month_salary(user_id:int):
     conn = None
@@ -161,3 +160,41 @@ def get_this_month_salary(user_id:int):
                     cursor.close()
                 conn.close()
     return{"code":200,"message":"Success","total":res[0]}
+
+
+#  API FOR GRAPHS
+
+@income_router.get('/each-month-income')
+def get_each_month_income(user_id:int,year:int=2026):
+    conn = None
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        query = f"""
+        select DATENAME(MONTH,income_date) as month, sum(amount) as Amount
+        from {INCOME_TABLE}
+        where year(income_date) = ? and userId = ?
+        group by DATENAME(MONTH,income_date),MONTH(INCOME_DATE)
+        order by DATENAME(MONTH,income_date)
+        """
+        res = cursor.execute(query,[year,user_id]).fetchall()
+
+    except Exception as e:
+        return {"code":400,"status":"Not Found"}
+    finally:
+        if conn:
+                if cursor:
+                    cursor.close()
+                conn.close()
+    result = []
+    month_order = []
+    for row in res:
+        result.append({
+            "month": row[0],
+            "amount": row[1]
+        })   
+        month_order.append(row[0])
+    month_order.sort(key=lambda x: datetime.strptime(x, '%B').month)
+    
+    return{"code":200,"message":"Success","data":result,"monthOrder":month_order}
+        

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from endpoints.auth import auth_router
 from endpoints.income_router import income_router
 from endpoints.expenditure import expenditure_router
+from endpoints.saving import saving_router
 
 
 app = FastAPI(title="Expense Tracker API System")
@@ -22,6 +23,7 @@ app.add_middleware(
 app.include_router(auth_router,prefix='/auth')
 app.include_router(income_router,prefix="/income")
 app.include_router(expenditure_router,prefix="/exp")
+app.include_router(saving_router,prefix='/saving')
 
 
 @app.get("/")
