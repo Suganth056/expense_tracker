@@ -1,46 +1,49 @@
 'use client'
 
-import { Box } from '@mui/material';
 import { useTheme } from "@/Context/ThemeProvider";
+import { useAuthContext } from "@/Context/AuthContext";
 import MenuIcon from "@mui/icons-material/Menu";
-import Image from 'next/image';
-import { useState,useEffect } from 'react';
+import { useEffect } from 'react';
+import '@/Styles/layout/TopBar.css';
 
 const TopBar = () => {
+    const { user } = useAuthContext();
+    const { istoggleSideBar, setIsToggleSideBar, setIsSideBarOpen } = useTheme();
 
+    useEffect(() => {
+        setIsToggleSideBar(true);
+        setIsSideBarOpen(true);
+    }, []);
 
-    const { isSideBarOpen, istoggleSideBar, setIsToggleSideBar, setIsSideBarOpen } = useTheme();
+    const displayName = user?.name || user?.user_name || user?.phone_no || 'Guest';
 
-    useEffect(()=>{
-        setIsToggleSideBar(true)
-        setIsSideBarOpen(true)
-    },[])
     return (
-        <div style={{width:"100%", minHeight: "50px", backgroundColor: "rgb(9, 1, 17)", 
-        color: "white", borderBottom: "3px solid rgb(138, 134, 134)", 
-        display: "flex", justifyContent: "space-between", alignItems: "center",padding:"0px 10px" }}>
-            <div style={{width:"max-content", height: "100%" }}>
-                <button style={{width:"30px",height:"30px",borderRadius:"50px",backgroundColor:"transparent",outline:"none",color:"white",border:"none"}}
-                onClick={()=>{setIsToggleSideBar(istoggleSideBar?false:true);setIsSideBarOpen(true)}}
-                >
-                    <MenuIcon sx={{cursor:"pointer",height:"30px",width:"30px"}}/>
-                </button>
-                
-            </div>
-            <div style={{flex:"1"}}>
+        <header className="topbar">
+            <button
+                className="topbar-menu"
+                onClick={() => {
+                    setIsToggleSideBar(!istoggleSideBar);
+                    setIsSideBarOpen(true);
+                }}
+            >
+                <MenuIcon />
+            </button>
 
+            <div className="topbar-brand">
+                <p>Expense Tracker</p>
             </div>
 
-            <div style={{width:"100px",height:"100%",display:"flex",justifyContent:"flex-end"}}>
-                <div style={{height:"100%",display:"flex",justifyContent:"flex-end"}}>
-                    <p>Suganth B</p>
-                    
+            <div className="topbar-profile" style={{width:"max-content"}}>
+                <span className="topbar-profile-avatar">
+                    {displayName?.toString().charAt(0).toUpperCase()}
+                </span>
+                <div>
+                    <p className="topbar-profile-greeting">Welcome back</p>
+                    <p className="topbar-profile-name">{displayName}</p>
                 </div>
-                
             </div>
-        </div>
-    )
-}
-
+        </header>
+    );
+};
 
 export default TopBar

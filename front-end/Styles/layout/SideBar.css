@@ -1,44 +1,67 @@
 .sidebar {
     transition: all ease 0.4s;
+    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 30%), #020617;
+    padding: 18px 12px;
+    color: #e2e8f0;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
 }
 
-.nav-section{
-    padding-top: 10px;
-    gap: 5px;
-
-}
-
-.nav-section .navList{
-    width: 100%;
+.sidebar-brand {
+    padding: 14px 0;
     text-align: center;
-    padding: 8px;
+}
+
+.sidebar-brand h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #f8fafc;
+    letter-spacing: 0.03em;
+}
+
+.nav-section {
+    padding-top: 14px;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-section .navList {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 14px;
     font-size: 14px;
-    border-radius: 8px;
-
+    border-radius: 16px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    background: rgba(255, 255, 255, 0.03);
 }
 
-.nav-section .navList:hover{
-    background-color: rgb(90, 110, 94);
+.nav-section .navList:hover {
+    background-color: rgba(96, 165, 250, 0.16);
+    transform: translateX(2px);
     cursor: pointer;
-
 }
 
-.x-mark{
+.nav-section .navList p {
+    margin: 0;
+    color: #f8fafc;
+    font-weight: 500;
+}
+
+.x-mark {
     display: none;
 }
 
-@media (max-width:700px) {
+@media (max-width: 700px) {
     .sidebar {
         z-index: 10;
         position: fixed;
         max-height: 100vh;
-
-    }
-    .x-mark{
-    display: block;
     }
 
-
-    
-    
+    .x-mark {
+        display: block;
+    }
 }

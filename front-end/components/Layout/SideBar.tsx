@@ -25,8 +25,8 @@ const SideBar = () => {
             {
                 (
                     isSideBarOpen && (
-                        <Box className="sidebar" sx={{ width: { xs: "70%", md: `${istoggleSideBar ? "15%" : "5%"}` }, height: "100vh", backgroundColor: "rgb(0, 0, 0)",position:{xs:"fixed",md:"relative"} }} >
-                            <div style={{ display: "flex", width: "100%", textAlign: "center", padding: "5px", paddingTop: "15px" }}>
+                        <Box className="sidebar" sx={{ width: { xs: "70%", md: `${istoggleSideBar ? "14%" : "6%"}` }, height: "100vh", position:{xs:"fixed",md:"relative"}, zIndex: 10 }} >
+                            <div className="sidebar-brand">
                                 <h2 style={{ display: `${istoggleSideBar ? "block" : "none"}` }}>Expense Tracker</h2>
                             </div>
                             <p className="x-mark" style={{position:"absolute",top:"10px",right:"10px",color:"white",maxWidth:"max-content",cursor:"pointer",fontWeight:"bold"}} onClick={handleSideBar}>X</p>

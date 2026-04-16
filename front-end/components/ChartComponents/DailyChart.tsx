@@ -42,6 +42,7 @@ const DailyChart = ({ data, title }: Props) => {
       backgroundColor: '#2c2c2c',
       borderColor: '#555',
       textStyle: { color: '#fff' },
+      extraCssText:"width:150px;",
       formatter: (params: any) => {
         const item = params[0];
         return `${item.name}<br/>₹ ${item.value}`;

@@ -1,5 +1,6 @@
 'use client';
 
+import { WidthFull } from '@mui/icons-material';
 import dynamic from 'next/dynamic';
 
 const ReactECharts = dynamic(() => import('echarts-for-react'), {
@@ -26,7 +27,7 @@ const MonthlyExpenseChart = ({ data, title }: Props) => {
 
     title: {
       text: title,
-      left: 'center',
+      left: 'center',   // Horizontal Alignment
       textStyle: {
         color: '#fff',
         fontSize: 16,
@@ -34,11 +35,12 @@ const MonthlyExpenseChart = ({ data, title }: Props) => {
     },
 
     tooltip: {
-      trigger: 'item',
+      trigger: 'item',   //it will trigger when hovering over each bar
       confine: true,
       appendToBody: false,
       backgroundColor: '#2c2c2c',
       borderColor: '#555',
+      extraCssText: 'width: 150px;',
       textStyle: { color: '#fff' },
       formatter: (params: any) => {
         return `${params.name}<br/>₹ ${params.value}`;
@@ -46,7 +48,7 @@ const MonthlyExpenseChart = ({ data, title }: Props) => {
     },
 
     grid: {
-      left: '3%',
+      left: '3%',   //Spacing around the Chart inside echart container
       right: '4%',
       bottom: '3%',
       containLabel: true,
@@ -71,7 +73,7 @@ const MonthlyExpenseChart = ({ data, title }: Props) => {
         name: title,
         type: 'bar',
         data: values,
-        barWidth: '40%',
+        barWidth: '99%',
         itemStyle: {
           color: '#1976d2',
           borderRadius: [6, 6, 0, 0],

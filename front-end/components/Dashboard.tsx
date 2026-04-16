@@ -6,6 +6,7 @@ import "@/Styles/dashboard/Dashboard.css";
 import { useAuthContext } from "@/Context/AuthContext";
 import MonthlyExpenseChart from './ChartComponents/MonthlyChart';
 import DailyChart from './ChartComponents/DailyChart';
+
 const Dashboard = () => {
 
     const { user } = useAuthContext();
