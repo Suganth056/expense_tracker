@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 import '@/Styles/layout/TopBar.css';
 
 const TopBar = () => {
-    const { user } = useAuthContext();
+    const { user, logout } = useAuthContext();
     const { istoggleSideBar, setIsToggleSideBar, setIsSideBarOpen } = useTheme();
 
     useEffect(() => {
@@ -41,6 +41,11 @@ const TopBar = () => {
                     <p className="topbar-profile-greeting">Welcome back</p>
                     <p className="topbar-profile-name">{displayName}</p>
                 </div>
+                {user && (
+                    <button className="topbar-logout-button" onClick={logout}>
+                        Logout
+                    </button>
+                )}
             </div>
         </header>
     );

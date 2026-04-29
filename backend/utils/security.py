@@ -13,15 +13,13 @@ ALGORITHM = os.getenv("ALGORITHM","HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES",30))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS",7))
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 def hash_password(password: str):
-    sha256_hash = hashlib.sha256(password.encode()).digest()
-    return pwd_context.hash(sha256_hash)
+    return pwd_context.hash(password)
 
 def verify_password(plain_password, hashed_password):
-    sha256_hash = hashlib.sha256(plain_password.encode()).digest()
-    return pwd_context.verify(sha256_hash, hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)
 
 # Create Access Token
 
