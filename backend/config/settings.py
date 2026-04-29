@@ -1,7 +1,7 @@
 
 SERVER_NAME = r"db.uikfvimesinoxgzqlxdj.supabase.co"
 
-DATABASE_NAME = r"Expense_Tracker"
+DATABASE_NAME = r"ExpenseTracker"
 
 USER_TABLES = "UserDetails"
 
