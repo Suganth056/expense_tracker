@@ -12,18 +12,23 @@
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
+    align-items: stretch;
 }
 
 .dashboard-card {
     flex: 1 1 240px;
     min-width: 220px;
-    padding: 18px;
+    padding: 14px 16px;
     border-radius: 20px;
     background: rgba(15, 23, 42, 0.86);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
     backdrop-filter: blur(8px);
-    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 125px;
+    max-height: 130px;
 }
 
 .card-heading {
@@ -184,6 +189,7 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
     backdrop-filter: blur(8px);
+    height: 120px;
     
 }
 }
