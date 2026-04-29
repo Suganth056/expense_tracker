@@ -1,6 +1,6 @@
 
-SERVER_NAME = r"EDS\SQLEXPRESS"
+SERVER_NAME = r"db.uikfvimesinoxgzqlxdj.supabase.co"
 
-DATABASE_NAME = r"Expense_Tracker"
+DATABASE_NAME = "ExpenseTracker"
 
 USER_TABLES = r"UserDetails"
