@@ -20,14 +20,16 @@ async def postSignUpDetails(request: Request):
 
     hashed_pwd = hash_password(pwd)
 
-    conn = None
+    conn = get_connection()
+    if conn is None:
+        return {"code": 500, "message": "Database connection failed"}
+
     try:
-        conn = get_connection()
         cursor = conn.cursor()
 
         query = f"""
         INSERT INTO {USER_TABLES} (user_name, phone_no, pwd)
-        VALUES (?, ?, ?)
+        VALUES (%s, %s, %s)
         """
 
         cursor.execute(query, (name, phone_no, hashed_pwd))
@@ -53,12 +55,16 @@ async def getLoginDetails(request: Request, response: Response):
     pwd = body.get("pwd")
 
     conn = get_connection()
+    if conn is None:
+        return {"code": 500, "message": "Database connection failed"}
+
     cursor = conn.cursor()
 
-    user = cursor.execute(
-        f"SELECT TOP 1 * FROM {USER_TABLES} WHERE phone_no = ?",
+    cursor.execute(
+        f"SELECT * FROM {USER_TABLES} WHERE phone_no = %s LIMIT 1",
         (phoneNo,)
-    ).fetchone()
+    )
+    user = cursor.fetchone()
 
     if not user:
         return {"code": 404, "message": "User not found"}
