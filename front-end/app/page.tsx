@@ -1,11 +1,11 @@
 import Image from "next/image";
 import styles from "./page.module.css";
-import Dashboard from "@/components/Dashboard";
+import RootLayout from "@/components/Layout/RootLayout";
 
 export default function Home() {
   return (
     <div className={styles.page}>
-      <Dashboard />
+      <RootLayout />
     </div>
   );
 }

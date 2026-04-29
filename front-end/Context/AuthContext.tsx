@@ -3,14 +3,25 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { BASE_URL, SIGN_UP, LOGIN } from "@/ENUM";
 import { jwtDecode } from "jwt-decode";
+import { Alert, Snackbar } from '@mui/material';
+import { AlertColor } from "@mui/material";
 
 interface AuthContextType {
     user: any;
     accessToken: string | null;
+    openSnackbar: boolean;
+    message: string | null;
+    statusMessage: any;
+    setStatusMessage: (params: any) => void;
+    setMessage: (params: any) => void;
+    setOpenSnackbar: (params: any) => void;
     signUp: (params: any) => Promise<any>;
     login: (params: any) => Promise<any>;
     logout: () => void;
     apiRequest: (url: string, options?: any) => Promise<any>;
+    refreshAccessToken: () => Promise<string | null>;
+    isTokenExpired: (token: string) => boolean;
+
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +29,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: any) => {
     const [user, setUser] = useState<any>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [openSnackbar, setOpenSnackbar] = useState(true);
+    const [message, setMessage] = useState(null);
+    const [statusMessage, setStatusMessage] = useState<AlertColor>("success");
+
 
     // 🔍 Check token expiry
     const isTokenExpired = (token: string) => {
@@ -32,7 +47,7 @@ export const AuthProvider = ({ children }: any) => {
     // 🔁 Refresh Access Token
     const refreshAccessToken = async () => {
         try {
-            const res = await fetch(`${BASE_URL}/refresh`, {
+            const res = await fetch(`${BASE_URL}/auth/refresh`, {
                 method: "POST",
                 credentials: "include", // 🔥 important
             });
@@ -148,7 +163,7 @@ export const AuthProvider = ({ children }: any) => {
                 method: "POST",
                 credentials: "include",
             });
-        } catch {}
+        } catch { }
 
         setAccessToken(null);
         setUser(null);
@@ -161,22 +176,71 @@ export const AuthProvider = ({ children }: any) => {
     // 🔄 Restore user on reload
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
+        console.log(storedUser)
         if (storedUser) {
             setUser(JSON.parse(storedUser));
         }
     }, []);
+
+    const handleClose = () => {
+        setOpenSnackbar(false)
+    }
 
     return (
         <AuthContext.Provider
             value={{
                 user,
                 accessToken,
+                openSnackbar,
+                message,
+                statusMessage,
+                setStatusMessage,
+                setMessage,
+                setOpenSnackbar,
                 signUp,
                 login,
                 logout,
                 apiRequest,
+                refreshAccessToken,
+                isTokenExpired,
             }}
+
+
         >
+            {
+                message && (
+                    <div>
+                        <Snackbar
+                            anchorOrigin={{ vertical: "top", horizontal: 'right' }} open={openSnackbar}
+                            autoHideDuration={30000} onClose={handleClose}
+                            sx={{
+                                '& .MuiSnackbarContent-root': {
+                                    padding: 0
+                                }
+                            }}
+
+                        >
+
+                            <Alert
+                                onClose={handleClose}
+                                severity={statusMessage}
+                                variant="filled"
+                                sx={{
+                                    width: '300px',
+                                    maxWidth: '300px',
+                                    boxSizing: 'border-box'
+                                }}
+
+                            >
+                                {message}
+                            </Alert>
+
+                        </Snackbar>
+                    </div>
+                )
+            }
+
+
             {children}
         </AuthContext.Provider>
     );
