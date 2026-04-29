@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Request
-from utils.security import hash_password, verify_password, create_access_token, create_refresh_token
+from fastapi import APIRouter, Request, Response
+from utils.security import hash_password, verify_password, create_access_token, create_refresh_token,decode_token
 from config.db_config import get_connection
 from config.settings import USER_TABLES
 
@@ -44,71 +44,81 @@ async def postSignUpDetails(request: Request):
             conn.close()
 
 
-# 🔐 LOGIN
 @auth_router.post('/login')
-async def getLoginDetails(request: Request):
+async def getLoginDetails(request: Request, response: Response):
     body = await request.json()
 
     user_name = body.get("user_name")
     phoneNo = body.get("phone_no")
     pwd = body.get("pwd")
 
-    if not phoneNo or not pwd:
-        return {"code": 400, "message": "Phone and password required"}
+    conn = get_connection()
+    cursor = conn.cursor()
 
-    conn = None
-    try:
-        conn = get_connection()
-        cursor = conn.cursor()
+    user = cursor.execute(
+        f"SELECT TOP 1 * FROM {USER_TABLES} WHERE phone_no = ?",
+        (phoneNo,)
+    ).fetchone()
 
-        query = f"SELECT TOP 1 * FROM {USER_TABLES} WHERE phone_no = ?"
-        user = cursor.execute(query, (phoneNo,)).fetchone()
+    if not user:
+        return {"code": 404, "message": "User not found"}
+    
+    if user_name != user[1]:
+        return {"code": 404, "message": "User name Invalid !!!"}
 
-        if not user:
-            return {"code": 404, "message": "User not found"}
+    if not verify_password(pwd, user[3]):
+        return {"code": 401, "message": "Invalid password"}
 
-        if user[1] != user_name:
-            return {"code": 401, "message": "Invalid UserName"}
+    payload = {
+        "user_id": user[0],
+        "phone_no": user[2]
+    }
 
-        stored_hash = user[3]
+    access_token = create_access_token(payload)
+    refresh_token = create_refresh_token(payload)
 
-        # 🔐 Verify password
-        if not verify_password(pwd, stored_hash):
-            return {"code": 401, "message": "Invalid password"}
+    # ✅ Store refresh token in HttpOnly cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=False,  # True in production (HTTPS)
+        samesite="lax"
+    )
 
-        # 🔑 Generate tokens
-        payload = {
-            "user_id": user[0],
+    return {
+        "code": 200,
+        "access_token": access_token,
+        "user": {
+            "id": user[0],
+            "name": user[1],
             "phone_no": user[2]
         }
-
-        access_token = create_access_token(payload)
-        refresh_token = create_refresh_token(payload)
-
-        return {
-            "code": 200,
-            "status": "Login Success",
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "user": {
-                "id": user[0],
-                "name": user[1],
-                "phone_no": user[2]
-            }
-        }
-
-    except Exception as e:
-        print(e)
-        return {"code": 400, "message": str(e)}
-
-    finally:
-        if conn:
-            conn.close()
-
+    }
 
 # Add this endpoint
 @auth_router.post('/refresh')
 async def refresh_token(request: Request):
+
+    refresh_token = request.cookies.get("refresh_token")
+
+    if not refresh_token:
+        return {"code": 401, "message": "No refresh token"}
+
+    payload = decode_token(refresh_token)
+
+    if not payload or payload.get("type") != "refresh":
+        return {"code": 401, "message": "Invalid refresh token"}
+
+    new_access_token = create_access_token({
+        "user_id": payload["user_id"],
+        "phone_no": payload["phone_no"]
+    })
+
+    return {
+        "code": 200,
+        "access_token": new_access_token
+    }
     body = await request.json()
     refresh_token = body.get("refresh_token")
 
@@ -138,3 +148,8 @@ async def refresh_token(request: Request):
 
     except Exception as e:
         return {"code": 401, "message": "Invalid or expired refresh token"}
+
+@auth_router.post('/logout')
+async def logout(response: Response):
+    response.delete_cookie("refresh_token")
+    return {"code": 200, "message": "Logged out"}
